@@ -53,22 +53,34 @@ export function ChatProvider({ children }) {
     const newSocket = io(API_BASE_URL);
     setSocket(newSocket);
 
-    newSocket.emit('join', savedUser.email);
+    // Bind join to the 'connect' event to support automatic reconnection subscriptions
+    newSocket.on('connect', () => {
+      newSocket.emit('join', savedUser.email);
+    });
 
     // Sync database unread counts immediately on join & other user updates
     newSocket.on('unreadCounts', (counts) => {
-      setUnreadCounts(counts || {});
+      const normalizedCounts = {};
+      if (counts) {
+        Object.entries(counts).forEach(([email, count]) => {
+          normalizedCounts[email.toLowerCase()] = count;
+        });
+      }
+      setUnreadCounts(normalizedCounts);
     });
 
     newSocket.on('receiveMessage', (message) => {
       // If we are the sender, we don't increment our own unread count
-      if (message.senderEmail === savedUser.email) return;
+      if (message.senderEmail.toLowerCase() === savedUser.email.toLowerCase()) return;
 
       // If the message is from someone else, check if we are actively chatting with them
-      if (activeChatUserRef.current !== message.senderEmail) {
+      const senderKey = message.senderEmail.toLowerCase();
+      const activeKey = activeChatUserRef.current?.toLowerCase();
+
+      if (activeKey !== senderKey) {
         setUnreadCounts(prev => ({
           ...prev,
-          [message.senderEmail]: (prev[message.senderEmail] || 0) + 1
+          [senderKey]: (prev[senderKey] || 0) + 1
         }));
         
         // Show premium glassmorphism notification toast!
@@ -82,9 +94,10 @@ export function ChatProvider({ children }) {
   }, [savedUser?.email]);
 
   const markAsRead = (email) => {
+    const key = email.toLowerCase();
     setUnreadCounts(prev => {
       const newCounts = { ...prev };
-      delete newCounts[email];
+      delete newCounts[key];
       return newCounts;
     });
     

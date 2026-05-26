@@ -47,10 +47,6 @@ function Chat() {
   const selectedUserRef = useRef(null);
   const messagesEndRef = useRef(null);
 
-  useEffect(() => {
-    selectedUserRef.current = selectedUser;
-  }, [selectedUser]);
-
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -65,9 +61,11 @@ function Chat() {
     const handleHistory = (history) => {
       if (!selectedUserRef.current) return;
       
+      const currentSelectedEmail = selectedUserRef.current.email?.toLowerCase();
+      
       const isForCurrentChat = history.length === 0 || 
-        history[0].senderEmail === selectedUserRef.current.email || 
-        history[0].receiverEmail === selectedUserRef.current.email;
+        history[0].senderEmail?.toLowerCase() === currentSelectedEmail || 
+        history[0].receiverEmail?.toLowerCase() === currentSelectedEmail;
         
       if (isForCurrentChat) {
         setMessages(prev => mergeMessages(prev, history));
@@ -77,8 +75,13 @@ function Chat() {
     const handleReceive = (message) => {
       if (!selectedUserRef.current) return;
 
-      const isFromSelected = message.senderEmail === selectedUserRef.current.email;
-      const isFromUs = message.senderEmail === savedUser.email && message.receiverEmail === selectedUserRef.current.email;
+      const currentSelectedEmail = selectedUserRef.current.email?.toLowerCase();
+      const messageSenderEmail = message.senderEmail?.toLowerCase();
+      const messageReceiverEmail = message.receiverEmail?.toLowerCase();
+      const savedUserEmail = savedUser.email?.toLowerCase();
+
+      const isFromSelected = messageSenderEmail === currentSelectedEmail;
+      const isFromUs = messageSenderEmail === savedUserEmail && messageReceiverEmail === currentSelectedEmail;
 
       if (isFromSelected || isFromUs) {
         setMessages(prev => mergeMessages(prev, [message]));
@@ -135,11 +138,17 @@ function Chat() {
 
   const activeMessages = messages.filter(msg => {
     if (!selectedUser) return false;
-    return (msg.senderEmail === savedUser.email && msg.receiverEmail === selectedUser.email) ||
-           (msg.senderEmail === selectedUser.email && msg.receiverEmail === savedUser.email);
+    const msgSender = msg.senderEmail?.toLowerCase();
+    const msgReceiver = msg.receiverEmail?.toLowerCase();
+    const currentMe = savedUser.email?.toLowerCase();
+    const currentSelected = selectedUser.email?.toLowerCase();
+    
+    return (msgSender === currentMe && msgReceiver === currentSelected) ||
+           (msgSender === currentSelected && msgReceiver === currentMe);
   });
 
   const handleSelectUser = (user) => {
+    selectedUserRef.current = user; // Synchronous ref assignment to prevent fast contact switching race conditions
     setSelectedUser(user);
     setMessages([]);
 
@@ -234,7 +243,7 @@ function Chat() {
 
             <div style={{ flex: 1, overflowY: 'auto' }}>
               {users.map((u) => {
-                const unreadCount = unreadCounts?.[u.email] || 0;
+                const unreadCount = unreadCounts?.[u.email.toLowerCase()] || 0;
 
                 return (
                   <div
