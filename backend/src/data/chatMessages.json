@@ -1,0 +1,123 @@
+[
+  {
+    "id": 1777826849577,
+    "senderName": "Normal User",
+    "senderEmail": "user@gmail.com",
+    "text": "hi!",
+    "createdAt": "2026-05-03T16:47:29.577Z"
+  },
+  {
+    "id": 1777885391471,
+    "senderName": "Admin User",
+    "senderEmail": "admin@gmail.com",
+    "text": "cf",
+    "createdAt": "2026-05-04T09:03:11.471Z"
+  },
+  {
+    "id": 1777885427143,
+    "senderName": "Normal User",
+    "senderEmail": "user@gmail.com",
+    "text": "bn tu",
+    "createdAt": "2026-05-04T09:03:47.143Z"
+  },
+  {
+    "id": 1777885427162,
+    "senderName": "Normal User",
+    "senderEmail": "user@gmail.com",
+    "text": "bn",
+    "createdAt": "2026-05-04T09:03:47.162Z"
+  },
+  {
+    "id": 1777885465624,
+    "senderName": "Admin User",
+    "senderEmail": "admin@gmail.com",
+    "text": "cf",
+    "createdAt": "2026-05-04T09:04:25.624Z"
+  },
+  {
+    "id": 1777885502495,
+    "senderName": "Normal User",
+    "senderEmail": "user@gmail.com",
+    "text": "ok",
+    "createdAt": "2026-05-04T09:05:02.495Z"
+  },
+  {
+    "id": 1777886136357,
+    "senderName": "Admin User",
+    "senderEmail": "admin@gmail.com",
+    "text": "cf",
+    "createdAt": "2026-05-04T09:15:36.357Z"
+  },
+  {
+    "id": 1778489500223,
+    "senderName": "User One",
+    "senderEmail": "user1@gmail.com",
+    "receiverEmail": "admin@gmail.com",
+    "text": "buna",
+    "createdAt": "2026-05-11T08:51:40.223Z"
+  },
+  {
+    "id": 1778491031174,
+    "senderName": "User One",
+    "senderEmail": "user1@gmail.com",
+    "receiverEmail": "admin@gmail.com",
+    "text": "hei",
+    "createdAt": "2026-05-11T09:17:11.174Z"
+  },
+  {
+    "id": 1778491096517,
+    "senderName": "Admin User",
+    "senderEmail": "admin@gmail.com",
+    "receiverEmail": "user1@gmail.com",
+    "text": "buna",
+    "createdAt": "2026-05-11T09:18:16.517Z"
+  },
+  {
+    "id": 1778491175721,
+    "senderName": "User One",
+    "senderEmail": "user1@gmail.com",
+    "receiverEmail": "admin@gmail.com",
+    "text": "cf",
+    "createdAt": "2026-05-11T09:19:35.721Z"
+  },
+  {
+    "id": 1778491317776,
+    "senderName": "Admin User",
+    "senderEmail": "admin@gmail.com",
+    "receiverEmail": "user1@gmail.com",
+    "text": "bine tu",
+    "createdAt": "2026-05-11T09:21:57.776Z"
+  },
+  {
+    "id": 1778491354316,
+    "senderName": "User One",
+    "senderEmail": "user1@gmail.com",
+    "receiverEmail": "admin@gmail.com",
+    "text": "bn",
+    "createdAt": "2026-05-11T09:22:34.316Z"
+  },
+  {
+    "id": 1778491354613,
+    "senderName": "User One",
+    "senderEmail": "user1@gmail.com",
+    "receiverEmail": "admin@gmail.com",
+    "text": "bn",
+    "createdAt": "2026-05-11T09:22:34.613Z"
+  },
+  {
+    "id": 1778491418509,
+    "senderName": "Admin User",
+    "senderEmail": "admin@gmail.com",
+    "receiverEmail": "user1@gmail.com",
+    "text": "bn",
+    "createdAt": "2026-05-11T09:23:38.509Z"
+  },
+  {
+    "id": 1778491454834,
+    "senderName": "User One",
+    "senderEmail": "user1@gmail.com",
+    "receiverEmail": "admin@gmail.com",
+    "text": "ok",
+    "createdAt": "2026-05-11T09:24:14.834Z"
+  }
+]

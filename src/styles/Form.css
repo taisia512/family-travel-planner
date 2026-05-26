@@ -1,0 +1,527 @@
+.form-layout {
+  display: flex;
+  min-height: 100vh;
+  background: #f8f8f6;
+}
+
+.form-main {
+  flex: 1;
+  min-height: 100vh;
+  padding: 16px 20px 32px 20px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  background: #f8f8f6;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.form-container {
+  width: 100%;
+  max-width: 560px;
+  background: #ffffff;
+  border-radius: 26px;
+  padding: 20px 30px 20px 30px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  margin-top: 12px;
+  margin-bottom: 24px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+}
+
+.form-title {
+  margin: 0 0 12px 0;
+  font-size: 30px;
+  font-weight: 700;
+  color: #222;
+  line-height: 1.05;
+}
+
+.form-container form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group,
+.detail-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.form-group label,
+.detail-group label {
+  font-size: 15px;
+  font-weight: 600;
+  color: #222;
+  margin: 0;
+}
+
+.form-group input,
+.form-group select,
+.detail-value {
+  display: flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 16px;
+  background: #fff;
+  border: 1px solid #d2d2d2;
+  border-radius: 14px;
+  font-size: 15px;
+
+  line-height: 44px; 
+}
+
+.error-message {
+  font-size: 11px;
+  color: #e25b5b;
+  margin-top: 1px;
+  line-height: 1.2;
+}
+
+.form-actions {
+  display: flex;
+  gap: 14px;
+  margin-top: 8px;
+}
+
+.btn {
+  flex: 1;
+  height: 44px;
+  border-radius: 14px;
+  border: 1.5px solid #2f4036;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cancel-btn,
+.confirm-btn {
+  background: #7f9f8e;
+  color: #fff;
+}
+
+.cancel-btn:hover,
+.confirm-btn:hover {
+  background: #5f7f6f;
+}
+
+.login-page {
+  width: 100%;
+  min-height: 100vh;
+  background: #f6f6f4;
+  position: relative;
+}
+
+.login-header {
+  position: absolute;
+  top: 26px;
+  left: 28px;
+  z-index: 10;
+}
+
+.login-main {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  box-sizing: border-box;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 430px;
+  display: flex;
+  flex-direction: column;
+}
+
+.login-title {
+  margin: 0;
+  font-size: 52px;
+  line-height: 1;
+  font-weight: 500;
+  color: #111;
+}
+
+.login-subtitle {
+  margin: 10px 0 32px 0;
+  font-size: 15px;
+  color: #9a9a9a;
+  font-weight: 400;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.login-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.login-group label {
+  font-size: 28px;
+  color: #1f1f1f;
+  font-weight: 400;
+}
+
+.login-group input {
+  width: 100%;
+  height: 58px;
+  border: 1px solid #cfcfcf;
+  border-radius: 16px;
+  padding: 0 18px;
+  box-sizing: border-box;
+  font-size: 16px;
+  background: #f8f8f8;
+  color: #222;
+}
+
+.login-group input::placeholder {
+  color: #b6b6b6;
+}
+
+.login-group input:focus {
+  outline: none;
+  border-color: #819c8b;
+  background: #ffffff;
+}
+
+.login-options {
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.remember-me {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: #595959;
+  font-weight: 400;
+}
+
+.remember-me input {
+  margin: 0;
+  width: 12px;
+  height: 12px;
+}
+
+.forgot-password-btn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: 12px;
+  color: #5f5f5f;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.login-submit-btn {
+  margin-top: 16px;
+  width: 100%;
+  height: 58px;
+  border: none;
+  border-radius: 14px;
+  background: #819c8b;
+  color: #ffffff;
+  font-size: 28px;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.login-submit-btn:hover {
+  background: #708b7a;
+}
+
+.login-footer-text {
+  margin: 18px 0 0 0;
+  text-align: center;
+  font-size: 11px;
+  color: #444;
+}
+
+.login-link {
+  color: #222;
+  text-decoration: none;
+}
+
+.login-link:hover {
+  text-decoration: underline;
+}
+
+.login-error {
+  color: #e25b5b;
+  font-size: 12px;
+  margin-top: 2px;
+  line-height: 1.3;
+}
+
+.reset-message {
+  margin-top: 12px;
+  font-size: 13px;
+  color: #2e7d32;
+  text-align: center;
+}
+
+.signup-page {
+  width: 100%;
+  min-height: 100vh;
+  background: #f6f6f4;
+  position: relative;
+  overflow-y: auto;
+}
+
+.signup-header {
+  position: absolute;
+  top: 26px;
+  left: 28px;
+  z-index: 10;
+}
+
+.signup-main {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 24px 20px 56px 20px;
+  box-sizing: border-box;
+}
+
+.signup-card {
+  width: 100%;
+  max-width: 500px;
+  background: #ffffff;
+  border-radius: 26px;
+  padding: 24px 30px 24px 30px;
+  box-sizing: border-box;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  margin-top: 28px;
+  margin-bottom: 56px;
+}
+
+.signup-title {
+  margin: 0;
+  font-size: 34px;
+  line-height: 1.05;
+  font-weight: 500;
+  color: #111;
+}
+
+.signup-subtitle {
+  margin: 8px 0 14px 0;
+  font-size: 13px;
+  color: #9a9a9a;
+  font-weight: 400;
+}
+
+.signup-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.signup-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.signup-group label {
+  font-size: 16px;
+  color: #1f1f1f;
+  font-weight: 400;
+}
+
+.signup-group input {
+  width: 100%;
+  height: 48px;
+  border: 1px solid #d6d6d6;
+  border-radius: 14px;
+  padding: 0 16px;
+  box-sizing: border-box;
+  font-size: 15px;
+  background: #fafafa;
+  color: #222;
+}
+
+.signup-group input::placeholder {
+  color: #b6b6b6;
+}
+
+.signup-group input:focus {
+  outline: none;
+  border-color: #819c8b;
+  background: #ffffff;
+}
+
+.signup-submit-btn {
+  margin-top: 2px;
+  width: 100%;
+  height: 50px;
+  border: none;
+  border-radius: 14px;
+  background: #8fa695;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.signup-submit-btn:hover {
+  background: #7f9785;
+}
+
+.signup-footer-text {
+  margin: 12px 0 0 0;
+  text-align: center;
+  font-size: 12px;
+  color: #444;
+  line-height: 1.4;
+}
+
+.signup-link {
+  color: #222;
+  text-decoration: none;
+}
+
+.signup-link:hover {
+  text-decoration: underline;
+}
+
+.trip-extra-section {
+  margin-top: 26px;
+}
+
+.trip-extra-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #222;
+  margin: 0 0 14px 0;
+}
+
+.trip-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.trip-stat-card {
+  border: 1px solid #d6d6d6;
+  border-radius: 16px;
+  padding: 16px;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.trip-stat-label {
+  font-size: 14px;
+  color: #777;
+  font-weight: 500;
+}
+
+.trip-stat-value {
+  font-size: 20px;
+  color: #222;
+  font-weight: 600;
+}
+
+.trip-empty-expenses {
+  border: 1px dashed #cfcfcf;
+  border-radius: 16px;
+  padding: 18px;
+  color: #777;
+  background: #fafafa;
+}
+
+.trip-expenses-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.trip-expense-item {
+  display: flex;
+  justify-content: space-between;  
+  align-items: center;
+  gap: 16px;
+  border: 1px solid #dcdcdc;
+  border-radius: 16px;
+  padding: 14px 16px;
+  background: #ffffff;
+}
+
+.trip-expense-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.trip-expense-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #222;
+}
+
+.trip-expense-meta {
+  font-size: 14px;
+  color: #666;
+}
+
+.trip-expense-delete {
+  width: auto;
+  min-width: 90px;       
+  padding: 8px 14px;     
+  font-size: 14px;
+  border-radius: 10px;
+}
+
+/* FORM */
+.trip-expense-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.trip-expense-form input {
+  width: 100%;
+  height: 52px;
+  border: 1px solid #cfcfcf;
+  border-radius: 14px;
+  padding: 0 16px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+.trip-expense-add-btn {
+  width: 100%;
+}
+
+@media (max-width: 900px) {
+  .trip-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .trip-expense-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .trip-expense-delete {
+    width: 100%;   
+  }
+}
