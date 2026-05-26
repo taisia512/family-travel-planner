@@ -80,7 +80,6 @@ function Dashboard({ trips, setTrips, onDeleteTrip, isOnline }) {
   });
 
   const visibleTrips = upcomingTrips.slice(0, visibleCount);
-
   const hasMoreTrips = visibleCount < upcomingTrips.length;
 
   useEffect(() => {
@@ -97,11 +96,7 @@ function Dashboard({ trips, setTrips, onDeleteTrip, isOnline }) {
       (entries) => {
         const firstEntry = entries[0];
 
-        if (
-          firstEntry.isIntersecting &&
-          hasMoreTrips &&
-          !isLoadingMore
-        ) {
+        if (firstEntry.isIntersecting && hasMoreTrips && !isLoadingMore) {
           setIsLoadingMore(true);
 
           setTimeout(() => {
@@ -135,10 +130,7 @@ function Dashboard({ trips, setTrips, onDeleteTrip, isOnline }) {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (
-        searchRef.current &&
-        !searchRef.current.contains(event.target)
-      ) {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
         setShowSuggestions(false);
       }
     };
@@ -146,10 +138,7 @@ function Dashboard({ trips, setTrips, onDeleteTrip, isOnline }) {
     document.addEventListener('mousedown', handleClickOutside);
 
     return () => {
-      document.removeEventListener(
-        'mousedown',
-        handleClickOutside
-      );
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
 
@@ -165,7 +154,6 @@ function Dashboard({ trips, setTrips, onDeleteTrip, isOnline }) {
   const handleConfirmDelete = () => {
     if (tripToDelete) {
       onDeleteTrip(tripToDelete);
-
       setDeleteModalOpen(false);
       setTripToDelete(null);
     }
@@ -188,18 +176,12 @@ function Dashboard({ trips, setTrips, onDeleteTrip, isOnline }) {
     const updatedHistory = [
       trimmedValue,
       ...searchHistory.filter(
-        (item) =>
-          item.toLowerCase() !== trimmedValue.toLowerCase()
+        (item) => item.toLowerCase() !== trimmedValue.toLowerCase()
       )
     ].slice(0, 5);
 
     setSearchHistory(updatedHistory);
-
-    localStorage.setItem(
-      'dashboardSearchHistory',
-      JSON.stringify(updatedHistory)
-    );
-
+    localStorage.setItem('dashboardSearchHistory', JSON.stringify(updatedHistory));
     setShowSuggestions(false);
   };
 
@@ -223,19 +205,12 @@ function Dashboard({ trips, setTrips, onDeleteTrip, isOnline }) {
               <h1>Plan your next trip:</h1>
             </div>
 
-            <div
-              className={`connection-status ${
-                isOnline ? 'online' : 'offline'
-              }`}
-            >
+            <div className={`connection-status ${isOnline ? 'online' : 'offline'}`}>
               {isOnline ? 'Online' : 'Offline mode'}
             </div>
 
             <div className="search-section">
-              <div
-                className="search-wrapper"
-                ref={searchRef}
-              >
+              <div className="search-wrapper" ref={searchRef}>
                 <div className="search-bar">
                   <span className="search-icon">⌕</span>
 
@@ -243,49 +218,38 @@ function Dashboard({ trips, setTrips, onDeleteTrip, isOnline }) {
                     type="text"
                     placeholder="Search trips by country or city"
                     value={searchInput}
-                    onChange={(e) =>
-                      setSearchInput(e.target.value)
-                    }
-                    onFocus={() =>
-                      setShowSuggestions(true)
-                    }
+                    onChange={(e) => setSearchInput(e.target.value)}
+                    onFocus={() => setShowSuggestions(true)}
                   />
                 </div>
 
-                {showSuggestions &&
-                  searchHistory.length > 0 && (
-                    <div className="search-suggestions">
-                      {searchHistory.map((item, index) => (
-                        <button
-                          key={`${item}-${index}`}
-                          type="button"
-                          className="search-suggestion-item"
-                          onClick={() =>
-                            handleSuggestionClick(item)
-                          }
-                        >
-                          {item}
-                        </button>
-                      ))}
-                    </div>
-                  )}
+                {showSuggestions && searchHistory.length > 0 && (
+                  <div className="search-suggestions">
+                    {searchHistory.map((item, index) => (
+                      <button
+                        key={`${item}-${index}`}
+                        type="button"
+                        className="search-suggestion-item"
+                        onClick={() => handleSuggestionClick(item)}
+                      >
+                        {item}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
-              <button
-                className="search-btn"
-                type="button"
-                onClick={handleSearch}
-              >
+              <button className="search-btn" type="button" onClick={handleSearch}>
                 Search
               </button>
 
               <button
-  type="button"
-  className="past-trips-btn"
-  onClick={() => navigate('/past-trips')}
->
-  View past trips
-</button>
+                type="button"
+                className="past-trips-btn"
+                onClick={() => navigate('/past-trips')}
+              >
+                View past trips
+              </button>
 
               {canCreateTrip && (
                 <button
@@ -301,7 +265,7 @@ function Dashboard({ trips, setTrips, onDeleteTrip, isOnline }) {
         </div>
 
         <section className="trips-section">
-        
+          <h2 className="upcoming-title">Upcoming Trips:</h2>
 
           {upcomingTrips.length > 0 ? (
             <>
@@ -319,10 +283,7 @@ function Dashboard({ trips, setTrips, onDeleteTrip, isOnline }) {
               </div>
 
               {hasMoreTrips && (
-                <div
-                  ref={loaderRef}
-                  className="infinite-loader"
-                ></div>
+                <div ref={loaderRef} className="infinite-loader"></div>
               )}
             </>
           ) : (

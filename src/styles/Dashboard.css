@@ -42,21 +42,41 @@
   animation: fadeSlideDown 0.45s ease;
 }
 
+.connection-status {
+  margin-top: 8px;
+  width: fit-content;
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.connection-status.online {
+  background: #e8f5ec;
+  color: #2e7d32;
+  border: 1px solid #b7dfbf;
+}
+
+.connection-status.offline {
+  background: #fff4e5;
+  color: #b26a00;
+  border: 1px solid #f1c27d;
+}
+
 .search-section {
   display: flex;
   align-items: center;
   gap: 14px;
-  flex-wrap: wrap;
-  margin-top: 20px;
+  width: 100%;
+  margin-top: 22px;
+  flex-wrap: nowrap;
   animation: fadeSlideDown 0.55s ease;
 }
 
 .search-wrapper {
   position: relative;
-  width: 430px;
-  max-width: 100%;
-  flex: 0 0 62%;
-  min-width: 0;
+  flex: 1;
+  min-width: 280px;
 }
 
 .search-bar {
@@ -142,6 +162,7 @@
 }
 
 .search-btn,
+.past-trips-btn,
 .add-trip-btn-top {
   width: 155px;
   height: 50px;
@@ -152,14 +173,15 @@
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
+  flex-shrink: 0;
   transition:
     transform 0.18s ease,
     box-shadow 0.18s ease,
     filter 0.18s ease;
-  flex-shrink: 0;
 }
 
 .search-btn:hover,
+.past-trips-btn:hover,
 .add-trip-btn-top:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
@@ -167,6 +189,7 @@
 }
 
 .search-btn:active,
+.past-trips-btn:active,
 .add-trip-btn-top:active {
   transform: translateY(0);
 }
@@ -179,21 +202,12 @@
   overflow: visible;
 }
 
-.trips-header {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  margin-top: 14px;
-  margin-bottom: 4px;
-  flex: 0 0 auto;
-  animation: fadeSlideDown 0.6s ease;
-}
-
-.trips-header h2 {
+.upcoming-title {
+  margin: 28px 0 14px 0;
   font-size: 24px;
   font-weight: 600;
   color: #222;
-  margin: 0;
+  animation: fadeSlideDown 0.6s ease;
 }
 
 .trips-grid {
@@ -225,6 +239,14 @@
 .trip-card:hover {
   transform: translateY(-3px);
   box-shadow: 0 10px 18px rgba(0, 0, 0, 0.06);
+}
+
+.infinite-loader {
+  height: 40px;
+  margin: 4px 0;
+  padding: 0;
+  opacity: 0;
+  pointer-events: none;
 }
 
 @keyframes fadeSlideDown {
@@ -264,19 +286,16 @@
 }
 
 @media (max-width: 1200px) {
+  .search-section {
+    flex-wrap: wrap;
+  }
+
+  .search-wrapper {
+    flex: 1 1 100%;
+  }
+
   .trips-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 980px) {
-  .dashboard-main {
-    padding: 10px 16px 8px 16px;
-  }
-
-  .planner-header h1,
-  .trips-header h2 {
-    font-size: 22px;
   }
 }
 
@@ -285,15 +304,8 @@
     padding: 10px 14px 8px 14px;
   }
 
-  .search-section {
-    gap: 10px;
-  }
-
-  .search-wrapper {
-    flex-basis: 100%;
-  }
-
   .search-btn,
+  .past-trips-btn,
   .add-trip-btn-top {
     width: 140px;
   }
@@ -303,88 +315,14 @@
   }
 }
 
-@media (max-width: 640px) {
-  .dashboard-main {
-    padding: 10px 12px 8px 12px;
-  }
-
-  .planner-header h1,
-  .trips-header h2 {
-    font-size: 20px;
-  }
-
-  .search-bar {
-    height: 46px;
-    border-radius: 16px;
-  }
-
-  .search-btn,
-  .add-trip-btn-top {
-    height: 46px;
-    width: auto;
-    min-width: 120px;
-    padding: 0 16px;
-    border-radius: 14px;
-  }
-}
-
 @media (max-width: 520px) {
-  .dashboard-main {
-    padding: 8px 10px 8px 10px;
-  }
-
   .search-section {
     gap: 8px;
   }
 
   .search-btn,
+  .past-trips-btn,
   .add-trip-btn-top {
-    min-width: 0;
     width: 100%;
   }
-}
-
-.connection-status {
-  margin-top: 8px;
-  width: fit-content;
-  padding: 6px 12px;
-  border-radius: 12px;
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.connection-status.online {
-  background: #e8f5ec;
-  color: #2e7d32;
-  border: 1px solid #b7dfbf;
-}
-
-.connection-status.offline {
-  background: #fff4e5;
-  color: #b26a00;
-  border: 1px solid #f1c27d;
-}
-
-.infinite-loader {
-  height: 40px;
-  margin: 4px 0;
-  padding: 0;
-  opacity: 0;
-  pointer-events: none;
-}
-.past-trips-btn {
-  height: 56px;
-  padding: 0 22px;
-  border-radius: 18px;
-  border: 1.5px solid #8aa08e;
-  background: #f8faf8;
-  color: #2f4036;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: 0.2s ease;
-}
-
-.past-trips-btn:hover {
-  background: #eef3ef;
 }
