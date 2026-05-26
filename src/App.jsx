@@ -366,17 +366,19 @@ function App() {
             </ProtectedRoute>
           }
         />
-      </Routes>
 
-      <Route
+        <Route
   path="/past-trips"
   element={
-    <PastTrips
-      trips={trips}
-      onDeleteTrip={handleDeleteTrip}
-    />
+    <ProtectedRoute>
+      <PastTrips
+        trips={trips}
+        onDeleteTrip={deleteTrip}
+      />
+    </ProtectedRoute>
   }
 />
+      </Routes>
     </div>
   );
 }
