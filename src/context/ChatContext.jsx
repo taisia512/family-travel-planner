@@ -2,7 +2,6 @@ import React, {
   createContext,
   useContext,
   useEffect,
-  useRef,
   useState
 } from 'react';
 import { io } from 'socket.io-client';
@@ -20,11 +19,6 @@ export function ChatProvider({ children }) {
   });
 
   const [activeChatUser, setActiveChatUser] = useState(null);
-  const activeChatUserRef = useRef(null);
-
-  useEffect(() => {
-    activeChatUserRef.current = activeChatUser;
-  }, [activeChatUser]);
 
   useEffect(() => {
     localStorage.setItem('unreadCounts', JSON.stringify(unreadCounts));
@@ -33,37 +27,23 @@ export function ChatProvider({ children }) {
   useEffect(() => {
     if (!savedUser?.email) return;
 
-    const newSocket = io(API_BASE_URL);
+    const newSocket = io(API_BASE_URL, {
+      transports: ['websocket', 'polling']
+    });
 
     setSocket(newSocket);
 
-    newSocket.emit('join', savedUser.email);
+    newSocket.on('connect', () => {
+      newSocket.emit('join', savedUser.email);
+    });
 
     newSocket.on('unreadCounts', (counts) => {
       setUnreadCounts(counts || {});
     });
 
-    newSocket.on('receiveMessage', (message) => {
-      if (message.senderEmail === savedUser.email) return;
-
-      if (activeChatUserRef.current === message.senderEmail) {
-        newSocket.emit('getChatHistory', {
-          user1: savedUser.email,
-          user2: message.senderEmail
-        });
-
-        return;
-      }
-
-      setUnreadCounts((prev) => ({
-        ...prev,
-        [message.senderEmail]: (prev[message.senderEmail] || 0) + 1
-      }));
-    });
-
     return () => {
+      newSocket.off('connect');
       newSocket.off('unreadCounts');
-      newSocket.off('receiveMessage');
       newSocket.disconnect();
     };
   }, [savedUser?.email]);

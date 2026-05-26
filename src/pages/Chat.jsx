@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Sidebar from '../components/Sidebar';
 import { FiUser, FiMessageCircle } from 'react-icons/fi';
 import { useChat } from '../context/ChatContext';
@@ -19,19 +19,19 @@ function Chat() {
     setActiveChatUser
   } = useChat();
 
+  const selectedUserRef = useRef(null);
   const messagesEndRef = useRef(null);
 
-  const scrollToBottom = () => {
+  useEffect(() => {
+    selectedUserRef.current = selectedUser;
+  }, [selectedUser]);
+
+  useEffect(() => {
     messagesEndRef.current?.scrollIntoView({
       behavior: 'smooth'
     });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
   }, [messages]);
 
-  // SOCKET EVENTS
   useEffect(() => {
     if (!socket || !savedUser?.email) return;
 
@@ -40,39 +40,72 @@ function Chat() {
     };
 
     const handleReceive = (message) => {
-      if (!selectedUser) return;
+      const currentSelectedUser = selectedUserRef.current;
+
+      if (!currentSelectedUser) return;
 
       const belongsToCurrentConversation =
         (message.senderEmail === savedUser.email &&
-          message.receiverEmail === selectedUser.email) ||
-        (message.senderEmail === selectedUser.email &&
+          message.receiverEmail === currentSelectedUser.email) ||
+        (message.senderEmail === currentSelectedUser.email &&
           message.receiverEmail === savedUser.email);
 
       if (!belongsToCurrentConversation) return;
 
       setMessages((prev) => {
-        const alreadyExists = prev.some(
-          (m) =>
-            (m._id && m._id === message._id) ||
-            (m.id && m.id === message.id)
-        );
+        if (message.tempId) {
+          const tempExists = prev.some((m) => m.id === message.tempId);
+
+          if (tempExists) {
+            return prev.map((m) =>
+              m.id === message.tempId ? message : m
+            );
+          }
+        }
+
+        const alreadyExists = prev.some((m) => {
+          const oldId = m._id || m.id;
+          const newId = message._id || message.id;
+
+          return oldId && newId && String(oldId) === String(newId);
+        });
 
         if (alreadyExists) return prev;
 
         return [...prev, message];
       });
+
+      if (message.senderEmail === currentSelectedUser.email && markAsRead) {
+        markAsRead(currentSelectedUser.email);
+
+        socket.emit('getChatHistory', {
+          user1: savedUser.email,
+          user2: currentSelectedUser.email
+        });
+      }
+    };
+
+    const handleMessageError = ({ tempId }) => {
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === tempId
+            ? { ...m, failed: true, pending: false }
+            : m
+        )
+      );
     };
 
     socket.on('chatHistory', handleHistory);
     socket.on('receiveMessage', handleReceive);
+    socket.on('messageError', handleMessageError);
 
     return () => {
       socket.off('chatHistory', handleHistory);
       socket.off('receiveMessage', handleReceive);
+      socket.off('messageError', handleMessageError);
     };
-  }, [socket, selectedUser, savedUser?.email]);
+  }, [socket, savedUser?.email, markAsRead]);
 
-  // CLEAR ACTIVE CHAT
   useEffect(() => {
     return () => {
       if (setActiveChatUser) {
@@ -81,7 +114,6 @@ function Chat() {
     };
   }, [setActiveChatUser]);
 
-  // FETCH USERS
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -96,11 +128,7 @@ function Chat() {
         const data = await res.json();
 
         if (Array.isArray(data)) {
-          setUsers(
-            data.filter(
-              (u) => u.email !== savedUser.email
-            )
-          );
+          setUsers(data.filter((u) => u.email !== savedUser.email));
         }
       } catch (err) {
         console.error('Failed to fetch users:', err);
@@ -112,6 +140,7 @@ function Chat() {
 
   const handleSelectUser = (user) => {
     setSelectedUser(user);
+    setMessages([]);
 
     if (setActiveChatUser) {
       setActiveChatUser(user.email);
@@ -130,15 +159,30 @@ function Chat() {
   };
 
   const handleSend = () => {
-    if (!text.trim()) return;
+    const cleanText = text.trim();
+
+    if (!cleanText) return;
     if (!selectedUser) return;
     if (!socket) return;
+
+    const tempMessage = {
+      id: `temp-${Date.now()}`,
+      senderName: savedUser.fullName,
+      senderEmail: savedUser.email,
+      receiverEmail: selectedUser.email,
+      text: cleanText,
+      createdAt: new Date().toISOString(),
+      pending: true
+    };
+
+    setMessages((prev) => [...prev, tempMessage]);
 
     socket.emit('sendMessage', {
       senderName: savedUser.fullName,
       senderEmail: savedUser.email,
       receiverEmail: selectedUser.email,
-      text: text.trim()
+      text: cleanText,
+      tempId: tempMessage.id
     });
 
     setText('');
@@ -152,13 +196,7 @@ function Chat() {
   };
 
   return (
-    <div
-      className="dashboard-layout"
-      style={{
-        height: '100vh',
-        overflow: 'hidden'
-      }}
-    >
+    <div className="dashboard-layout" style={{ height: '100vh', overflow: 'hidden' }}>
       <Sidebar />
 
       <main
@@ -170,19 +208,9 @@ function Chat() {
           height: '100%'
         }}
       >
-        <h1 style={{ marginBottom: '20px' }}>
-          Direct Messages
-        </h1>
+        <h1 style={{ marginBottom: '20px' }}>Direct Messages</h1>
 
-        <div
-          style={{
-            display: 'flex',
-            flex: 1,
-            gap: '20px',
-            minHeight: 0
-          }}
-        >
-          {/* CONTACTS */}
+        <div style={{ display: 'flex', flex: 1, gap: '20px', minHeight: 0 }}>
           <div
             style={{
               width: '300px',
@@ -205,15 +233,9 @@ function Chat() {
               Contacts
             </div>
 
-            <div
-              style={{
-                flex: 1,
-                overflowY: 'auto'
-              }}
-            >
+            <div style={{ flex: 1, overflowY: 'auto' }}>
               {users.map((u) => {
-                const unreadCount =
-                  unreadCounts?.[u.email] || 0;
+                const unreadCount = unreadCounts?.[u.email] || 0;
 
                 return (
                   <div
@@ -221,26 +243,17 @@ function Chat() {
                     onClick={() => handleSelectUser(u)}
                     style={{
                       padding: '15px',
-                      borderBottom:
-                        '1px solid #f1f1f1',
+                      borderBottom: '1px solid #f1f1f1',
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
                       gap: '12px',
                       backgroundColor:
-                        selectedUser?.id === u.id
-                          ? '#eef4f1'
-                          : '#fff'
+                        selectedUser?.id === u.id ? '#eef4f1' : '#fff'
                     }}
                   >
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '12px'
-                      }}
-                    >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                       <div
                         style={{
                           width: '40px',
@@ -257,21 +270,11 @@ function Chat() {
                       </div>
 
                       <div>
-                        <div
-                          style={{
-                            fontWeight: 'bold',
-                            color: '#333'
-                          }}
-                        >
+                        <div style={{ fontWeight: 'bold', color: '#333' }}>
                           {u.fullName}
                         </div>
 
-                        <div
-                          style={{
-                            fontSize: '12px',
-                            color: '#888'
-                          }}
-                        >
+                        <div style={{ fontSize: '12px', color: '#888' }}>
                           {u.email}
                         </div>
                       </div>
@@ -288,9 +291,7 @@ function Chat() {
                           fontWeight: 'bold'
                         }}
                       >
-                        {unreadCount > 9
-                          ? '9+'
-                          : unreadCount}
+                        {unreadCount > 9 ? '9+' : unreadCount}
                       </div>
                     )}
                   </div>
@@ -299,7 +300,6 @@ function Chat() {
             </div>
           </div>
 
-          {/* CHAT */}
           <div
             style={{
               flex: 1,
@@ -317,8 +317,7 @@ function Chat() {
                   style={{
                     padding: '15px 20px',
                     backgroundColor: '#fff',
-                    borderBottom:
-                      '1px solid #e0e0e0',
+                    borderBottom: '1px solid #e0e0e0',
                     fontWeight: 'bold',
                     display: 'flex',
                     alignItems: 'center',
@@ -354,22 +353,16 @@ function Chat() {
                   }}
                 >
                   {messages.map((message) => {
-                    const isMe =
-                      message.senderEmail ===
-                      savedUser.email;
+                    const isMe = message.senderEmail === savedUser.email;
 
                     return (
                       <div
-                        key={
-                          message._id ||
-                          message.id
-                        }
+                        key={message._id || message.id}
                         style={{
                           display: 'flex',
                           flexDirection: 'column',
-                          alignItems: isMe
-                            ? 'flex-end'
-                            : 'flex-start'
+                          alignItems: isMe ? 'flex-end' : 'flex-start',
+                          opacity: message.pending ? 0.65 : 1
                         }}
                       >
                         <span
@@ -380,26 +373,21 @@ function Chat() {
                           }}
                         >
                           {message.senderName}
+                          {message.pending ? ' · sending...' : ''}
+                          {message.failed ? ' · failed' : ''}
                         </span>
 
                         <div
                           style={{
-                            backgroundColor: isMe
-                              ? '#2d4b3b'
-                              : '#ffffff',
-                            color: isMe
-                              ? '#ffffff'
-                              : '#333333',
+                            backgroundColor: isMe ? '#2d4b3b' : '#ffffff',
+                            color: isMe ? '#ffffff' : '#333333',
                             padding: '10px 16px',
                             borderRadius: isMe
                               ? '16px 16px 4px 16px'
                               : '16px 16px 16px 4px',
                             maxWidth: '70%',
-                            boxShadow:
-                              '0 2px 4px rgba(0,0,0,0.05)',
-                            border: isMe
-                              ? 'none'
-                              : '1px solid #e0e0e0',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                            border: isMe ? 'none' : '1px solid #e0e0e0',
                             lineHeight: '1.4'
                           }}
                         >
@@ -416,8 +404,7 @@ function Chat() {
                   style={{
                     padding: '20px',
                     backgroundColor: '#fff',
-                    borderTop:
-                      '1px solid #e0e0e0',
+                    borderTop: '1px solid #e0e0e0',
                     display: 'flex',
                     gap: '12px'
                   }}
@@ -426,9 +413,7 @@ function Chat() {
                     type="text"
                     placeholder={`Message ${selectedUser.fullName}...`}
                     value={text}
-                    onChange={(e) =>
-                      setText(e.target.value)
-                    }
+                    onChange={(e) => setText(e.target.value)}
                     onKeyDown={handleKeyDown}
                     style={{
                       flex: 1,
@@ -443,6 +428,7 @@ function Chat() {
                   <button
                     type="button"
                     onClick={handleSend}
+                    disabled={!socket}
                     style={{
                       padding: '12px 24px',
                       borderRadius: '24px',
@@ -450,7 +436,8 @@ function Chat() {
                       backgroundColor: '#2d4b3b',
                       color: 'white',
                       fontWeight: 'bold',
-                      cursor: 'pointer'
+                      cursor: socket ? 'pointer' : 'not-allowed',
+                      opacity: socket ? 1 : 0.6
                     }}
                   >
                     Send
@@ -469,14 +456,8 @@ function Chat() {
                   gap: '10px'
                 }}
               >
-                <FiMessageCircle
-                  size={48}
-                  color="#ccc"
-                />
-
-                <p>
-                  Select a contact to start chatting
-                </p>
+                <FiMessageCircle size={48} color="#ccc" />
+                <p>Select a contact to start chatting</p>
               </div>
             )}
           </div>
@@ -485,4 +466,5 @@ function Chat() {
     </div>
   );
 }
+
 export default Chat;
