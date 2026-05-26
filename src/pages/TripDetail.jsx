@@ -9,6 +9,7 @@ function TripDetail({ trips }) {
 
   const savedUser = JSON.parse(localStorage.getItem('user'));
   const userId = savedUser?.id;
+  const token = localStorage.getItem('token');
   const permissions = savedUser?.permissions || [];
 
   const canUpdateTrip = permissions.includes('UPDATE_TRIP');
@@ -35,7 +36,8 @@ function TripDetail({ trips }) {
   try {
     const res = await fetch(`${API_BASE_URL}/api/trips/${id}/expenses`, {
       headers: {
-        'x-user-id': userId
+        'x-user-id': userId,
+        Authorization: `Bearer ${token}`
       }
     });
 
@@ -52,7 +54,8 @@ const fetchExpenseStats = async () => {
   try {
     const res = await fetch(`${API_BASE_URL}/api/trips/${id}/expenses/stats`, {
       headers: {
-        'x-user-id': userId
+        'x-user-id': userId,
+        Authorization: `Bearer ${token}`
       }
     });
 
@@ -67,7 +70,6 @@ const fetchExpenseStats = async () => {
     console.error('Failed to fetch expense stats:', error);
   }
 };
-
     if (trip) {
       fetchExpenses();
       fetchExpenseStats();
@@ -125,8 +127,9 @@ const fetchExpenseStats = async () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-user-id': userId
-        },
+          'x-user-id': userId,
+           Authorization: `Bearer ${token}`
+          },
         body: JSON.stringify({
           title: newExpense.title,
           amount: Number(newExpense.amount),
@@ -164,8 +167,9 @@ const fetchExpenseStats = async () => {
       await fetch(`${API_BASE_URL}/api/expenses/${expenseId}`, {
         method: 'DELETE',
         headers: {
-          'x-user-id': userId
-        }
+  'x-user-id': userId,
+  Authorization: `Bearer ${token}`
+}
       });
 
       setExpenses((prev) => prev.filter((expense) => expense.id !== expenseId));
