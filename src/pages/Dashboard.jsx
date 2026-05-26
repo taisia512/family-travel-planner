@@ -37,7 +37,7 @@ function Dashboard({ trips, setTrips, onDeleteTrip, isOnline }) {
     socket.on('newTrip', (trip) => {
       setTrips((prevTrips) => {
         const alreadyExists = prevTrips.some(
-          (existingTrip) => existingTrip.id === trip.id
+          (existingTrip) => String(existingTrip.id) === String(trip.id)
         );
 
         if (alreadyExists) return prevTrips;
