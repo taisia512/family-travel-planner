@@ -7,8 +7,6 @@ import logoPin from '../assets/logo-pin.png';
 import { LuLayoutDashboard } from 'react-icons/lu';
 import { HiOutlineChartBar } from 'react-icons/hi';
 import {
-  FiUser,
-  FiSettings,
   FiLogOut,
   FiMessageCircle,
   FiShield
@@ -129,37 +127,7 @@ function Sidebar() {
             </span>
           </NavLink>
 
-          {/* PROFILE */}
-          <NavLink
-            to="/profile"
-            className={({ isActive }) =>
-              `nav-item ${isActive ? 'active' : 'inactive'}`
-            }
-          >
-            <span className="nav-icon">
-              <FiUser />
-            </span>
-
-            <span className="nav-label">
-              Profile
-            </span>
-          </NavLink>
-
-          {/* SETTINGS */}
-          <NavLink
-            to="/settings"
-            className={({ isActive }) =>
-              `nav-item ${isActive ? 'active' : 'inactive'}`
-            }
-          >
-            <span className="nav-icon">
-              <FiSettings />
-            </span>
-
-            <span className="nav-label">
-              Settings
-            </span>
-          </NavLink>
+          
 
           {/* ADMIN */}
           {isAdmin && (
