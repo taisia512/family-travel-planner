@@ -24,7 +24,7 @@ function Dashboard({ trips, setTrips, onDeleteTrip, isOnline }) {
   const [visibleCount, setVisibleCount] = useState(3);
 
   const loaderRef = useRef(null);
-
+  const searchRef = useRef(null);
   const [searchHistory, setSearchHistory] = useState(() => {
     const saved = localStorage.getItem('dashboardSearchHistory');
     return saved ? JSON.parse(saved) : [];
@@ -158,6 +158,20 @@ const sortedTrips = [...filteredTrips].sort(
     setShowSuggestions(false);
   };
 
+  useEffect(() => {
+  const handleClickOutside = (event) => {
+    if (searchRef.current && !searchRef.current.contains(event.target)) {
+      setShowSuggestions(false);
+    }
+  };
+
+  document.addEventListener('mousedown', handleClickOutside);
+
+  return () => {
+    document.removeEventListener('mousedown', handleClickOutside);
+  };
+}, []);
+
   return (
     <div className="dashboard-layout">
       <Sidebar />
@@ -178,7 +192,7 @@ const sortedTrips = [...filteredTrips].sort(
             </div>
 
             <div className="search-section">
-              <div className="search-wrapper">
+              <div className="search-wrapper" ref={searchRef}>
                 <div className="search-bar">
                   <span className="search-icon">⌕</span>
 
