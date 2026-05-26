@@ -39,9 +39,21 @@ function AddTrip({ onAddTrip }) {
       newErrors.endDate = 'End date is required';
     }
 
+    if (formData.startDate) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const start = new Date(formData.startDate);
+      start.setHours(0, 0, 0, 0);
+
+      if (start < today) {
+        newErrors.startDate = 'Start date cannot be in the past';
+      }
+    }
+
     if (formData.startDate && formData.endDate) {
-      if (new Date(formData.startDate) >= new Date(formData.endDate)) {
-        newErrors.endDate = 'End date must be after start date';
+      if (new Date(formData.endDate) < new Date(formData.startDate)) {
+        newErrors.endDate = 'End date cannot be before start date';
       }
     }
 
@@ -123,17 +135,13 @@ function AddTrip({ onAddTrip }) {
                 className={errors.country ? 'error' : ''}
               >
                 <option value="">Select a country</option>
-
                 {countryOptions.map((country) => (
                   <option key={country} value={country}>
                     {country}
                   </option>
                 ))}
               </select>
-
-              {errors.country && (
-                <span className="error-message">{errors.country}</span>
-              )}
+              {errors.country && <span className="error-message">{errors.country}</span>}
             </div>
 
             <div className="form-group">
@@ -149,17 +157,13 @@ function AddTrip({ onAddTrip }) {
                 <option value="">
                   {formData.country ? 'Select a city' : 'Select country first'}
                 </option>
-
                 {cityOptions.map((city) => (
                   <option key={city} value={city}>
                     {city}
                   </option>
                 ))}
               </select>
-
-              {errors.city && (
-                <span className="error-message">{errors.city}</span>
-              )}
+              {errors.city && <span className="error-message">{errors.city}</span>}
             </div>
 
             <div className="form-group">
@@ -172,9 +176,7 @@ function AddTrip({ onAddTrip }) {
                 onChange={handleChange}
                 className={errors.startDate ? 'error' : ''}
               />
-              {errors.startDate && (
-                <span className="error-message">{errors.startDate}</span>
-              )}
+              {errors.startDate && <span className="error-message">{errors.startDate}</span>}
             </div>
 
             <div className="form-group">
@@ -187,9 +189,7 @@ function AddTrip({ onAddTrip }) {
                 onChange={handleChange}
                 className={errors.endDate ? 'error' : ''}
               />
-              {errors.endDate && (
-                <span className="error-message">{errors.endDate}</span>
-              )}
+              {errors.endDate && <span className="error-message">{errors.endDate}</span>}
             </div>
 
             <div className="form-group">
@@ -202,17 +202,11 @@ function AddTrip({ onAddTrip }) {
                 onChange={handleChange}
                 className={errors.travelers ? 'error' : ''}
               />
-              {errors.travelers && (
-                <span className="error-message">{errors.travelers}</span>
-              )}
+              {errors.travelers && <span className="error-message">{errors.travelers}</span>}
             </div>
 
             <div className="form-actions">
-              <button
-                type="button"
-                className="btn cancel-btn"
-                onClick={handleCancel}
-              >
+              <button type="button" className="btn cancel-btn" onClick={handleCancel}>
                 Cancel
               </button>
 

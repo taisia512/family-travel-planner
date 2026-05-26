@@ -13,12 +13,24 @@ const validateTrip = (trip) => {
     errors.push('End date is required');
   }
 
+  if (trip.startDate) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const start = new Date(trip.startDate);
+    start.setHours(0, 0, 0, 0);
+
+    if (start < today) {
+      errors.push('Start date cannot be in the past');
+    }
+  }
+
   if (trip.startDate && trip.endDate) {
     const start = new Date(trip.startDate);
     const end = new Date(trip.endDate);
 
     if (end < start) {
-      errors.push('End date must be after start date');
+      errors.push('End date cannot be before start date');
     }
   }
 
