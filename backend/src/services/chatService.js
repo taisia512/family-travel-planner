@@ -36,11 +36,12 @@ const getPrivateMessages = async (user1, user2) => {
 const addMessage = async (msg) => {
   if (isMongoConnected()) {
     const newMessage = new Message({
-      senderName: msg.senderName,
-      senderEmail: msg.senderEmail,
-      receiverEmail: msg.receiverEmail,
-      text: msg.text
-    });
+  senderName: msg.senderName,
+  senderEmail: msg.senderEmail,
+  receiverEmail: msg.receiverEmail,
+  text: msg.text,
+  read: false
+});
 
     return await newMessage.save();
   }
@@ -48,13 +49,14 @@ const addMessage = async (msg) => {
   const messages = readJsonMessages();
 
   const newMessage = {
-    id: Date.now(),
-    senderName: msg.senderName,
-    senderEmail: msg.senderEmail,
-    receiverEmail: msg.receiverEmail,
-    text: msg.text,
-    createdAt: new Date().toISOString()
-  };
+  id: Date.now(),
+  senderName: msg.senderName,
+  senderEmail: msg.senderEmail,
+  receiverEmail: msg.receiverEmail,
+  text: msg.text,
+  read: false,
+  createdAt: new Date().toISOString()
+};
 
   messages.push(newMessage);
   writeJsonMessages(messages);
@@ -62,7 +64,66 @@ const addMessage = async (msg) => {
   return newMessage;
 };
 
+const markMessagesAsRead = async (currentUserEmail, otherUserEmail) => {
+  if (isMongoConnected()) {
+    await Message.updateMany(
+      {
+        senderEmail: otherUserEmail,
+        receiverEmail: currentUserEmail,
+        read: false
+      },
+      {
+        $set: { read: true }
+      }
+    );
+
+    return true;
+  }
+
+  const messages = readJsonMessages();
+
+  const updatedMessages = messages.map((msg) => {
+    if (
+      msg.senderEmail === otherUserEmail &&
+      msg.receiverEmail === currentUserEmail &&
+      !msg.read
+    ) {
+      return { ...msg, read: true };
+    }
+
+    return msg;
+  });
+
+  writeJsonMessages(updatedMessages);
+  return true;
+};
+
+const getUnreadCounts = async (currentUserEmail) => {
+  if (isMongoConnected()) {
+    const unreadMessages = await Message.find({
+      receiverEmail: currentUserEmail,
+      read: false
+    });
+
+    return unreadMessages.reduce((acc, msg) => {
+      acc[msg.senderEmail] = (acc[msg.senderEmail] || 0) + 1;
+      return acc;
+    }, {});
+  }
+
+  const messages = readJsonMessages();
+
+  return messages
+    .filter((msg) => msg.receiverEmail === currentUserEmail && !msg.read)
+    .reduce((acc, msg) => {
+      acc[msg.senderEmail] = (acc[msg.senderEmail] || 0) + 1;
+      return acc;
+    }, {});
+};
+
 module.exports = {
   getPrivateMessages,
-  addMessage
+  addMessage,
+  markMessagesAsRead,
+  getUnreadCounts
 };

@@ -57,21 +57,33 @@ const chatService = require('./services/chatService');
 io.on('connection', async (socket) => {
   console.log('User connected');
 
-  socket.on('join', (userEmail) => {
-    socket.join(userEmail);
-    console.log(`User ${userEmail} joined their private room`);
-  });
+  socket.on('join', async (userEmail) => {
+  socket.join(userEmail);
+  console.log(`User ${userEmail} joined their private room`);
+
+  const unreadCounts = await chatService.getUnreadCounts(userEmail);
+  socket.emit('unreadCounts', unreadCounts);
+});
 
   socket.on('getChatHistory', async ({ user1, user2 }) => {
-    const messages = await chatService.getPrivateMessages(user1, user2);
-    socket.emit('chatHistory', messages);
-  });
+  await chatService.markMessagesAsRead(user1, user2);
+
+  const messages = await chatService.getPrivateMessages(user1, user2);
+  const unreadCounts = await chatService.getUnreadCounts(user1);
+
+  socket.emit('chatHistory', messages);
+  socket.emit('unreadCounts', unreadCounts);
+});
 
   socket.on('sendMessage', async (msg) => {
-    const savedMessage = await chatService.addMessage(msg);
-    io.to(msg.receiverEmail).emit('receiveMessage', savedMessage);
-    io.to(msg.senderEmail).emit('receiveMessage', savedMessage);
-  });
+  const savedMessage = await chatService.addMessage(msg);
+
+  io.to(msg.receiverEmail).emit('receiveMessage', savedMessage);
+  io.to(msg.senderEmail).emit('receiveMessage', savedMessage);
+
+  const receiverUnreadCounts = await chatService.getUnreadCounts(msg.receiverEmail);
+  io.to(msg.receiverEmail).emit('unreadCounts', receiverUnreadCounts);
+});
 
   socket.on('disconnect', () => {
     console.log('User disconnected');

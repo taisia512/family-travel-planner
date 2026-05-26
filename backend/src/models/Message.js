@@ -5,6 +5,10 @@ const messageSchema = new mongoose.Schema({
   senderEmail: String,
   receiverEmail: String,
   text: String,
+  read: {
+    type: Boolean,
+    default: false
+  },
   createdAt: {
     type: Date,
     default: Date.now
