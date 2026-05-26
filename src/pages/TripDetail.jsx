@@ -242,7 +242,11 @@ const fetchExpenseStats = async () => {
               <div className="trip-stat-card">
                 <span className="trip-stat-label">Average amount</span>
                 <span className="trip-stat-value">
-                  {expenseStats.averageAmount.toFixed(2)} RON
+                  {
+  trip.travelers > 0
+    ? (expenseStats.totalAmount / trip.travelers).toFixed(2)
+    : '0.00'
+} RON
                 </span>
               </div>
             </div>
