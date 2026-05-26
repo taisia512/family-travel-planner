@@ -176,30 +176,38 @@ function App() {
   }, [isOnline, pendingActions, syncPendingActions]);
 
   const addTrip = async (newTrip) => {
-    const currentUser = JSON.parse(localStorage.getItem('user'));
-    if (!currentUser?.id) return;
+  const currentUser = JSON.parse(localStorage.getItem('user'));
 
-    if (isOnline) {
-      try {
-        const response = await apiFetch(API_URL, {
-          method: 'POST',
-          body: JSON.stringify(newTrip)
-        });
+  if (!currentUser?.id) {
+    alert('You are not logged in.');
+    return;
+  }
 
-        if (!response.ok) throw new Error('Failed to add trip to server');
+  try {
+    const response = await apiFetch(API_URL, {
+      method: 'POST',
+      body: JSON.stringify(newTrip)
+    });
 
-        const createdTrip = await response.json();
-        setTrips((prevTrips) => removeDuplicateTrips([...prevTrips, createdTrip]));
-        return;
-      } catch (error) {
-        console.error('Server unavailable, trip queued locally:', error);
-      }
+    const text = await response.text();
+    console.log('ADD TRIP STATUS:', response.status);
+    console.log('ADD TRIP RESPONSE:', text);
+
+    if (!response.ok) {
+      alert(`Failed to add trip. Status: ${response.status}. Response: ${text}`);
+      return;
     }
 
-    const localTrip = { ...newTrip, id: Date.now() };
-    setTrips((prevTrips) => removeDuplicateTrips([...prevTrips, localTrip]));
-    setPendingActions((prevActions) => [...prevActions, { type: 'add', trip: localTrip }]);
-  };
+    const createdTrip = JSON.parse(text);
+
+    setTrips((prevTrips) =>
+      removeDuplicateTrips([...prevTrips, createdTrip])
+    );
+  } catch (error) {
+    console.error('Add trip error:', error);
+    alert('Add trip failed. Check Console.');
+  }
+};
 
   const updateTrip = async (updatedTrip) => {
     const currentUser = JSON.parse(localStorage.getItem('user'));
