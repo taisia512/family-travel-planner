@@ -22,7 +22,7 @@ function Dashboard({ trips, setTrips, onDeleteTrip, isOnline }) {
   const [tripToDelete, setTripToDelete] = useState(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [visibleCount, setVisibleCount] = useState(6);
-
+const [isLoadingMore, setIsLoadingMore] = useState(false);
   const searchRef = useRef(null);
   const loaderRef = useRef(null);
   const [searchHistory, setSearchHistory] = useState(() => {
@@ -31,22 +31,40 @@ function Dashboard({ trips, setTrips, onDeleteTrip, isOnline }) {
   });
 
   useEffect(() => {
-    const socket = io(API_BASE_URL);
+  const observer = new IntersectionObserver(
+    (entries) => {
+      const firstEntry = entries[0];
 
-    socket.on('newTrip', (trip) => {
-      setTrips((prevTrips) => {
-        const alreadyExists = prevTrips.some(
-          (existingTrip) => String(existingTrip.id) === String(trip.id)
-        );
+      if (firstEntry.isIntersecting && hasMoreTrips && !isLoadingMore) {
+        setIsLoadingMore(true);
 
-        if (alreadyExists) return prevTrips;
+        setTimeout(() => {
+          setVisibleCount((prev) =>
+            Math.min(prev + itemsPerLoad, upcomingTrips.length)
+          );
+          setIsLoadingMore(false);
+        }, 250);
+      }
+    },
+    {
+      root: null,
+      rootMargin: '200px',
+      threshold: 0
+    }
+  );
 
-        return [...prevTrips, trip];
-      });
-    });
+  const currentLoader = loaderRef.current;
 
-    return () => socket.disconnect();
-  }, [setTrips]);
+  if (currentLoader) {
+    observer.observe(currentLoader);
+  }
+
+  return () => {
+    if (currentLoader) {
+      observer.unobserve(currentLoader);
+    }
+  };
+}, [hasMoreTrips, isLoadingMore, upcomingTrips.length]);
 
   const itemsPerLoad = 3;
 

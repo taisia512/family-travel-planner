@@ -12,7 +12,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  overflow-y: auto;
+  overflow-y: visible;
   overflow-x: hidden;
   background: #ffffff;
   justify-content: flex-start;
