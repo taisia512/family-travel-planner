@@ -23,6 +23,21 @@ const PENDING_ACTIONS_KEY = 'family_travel_pending_actions';
 const API_URL = `${API_BASE_URL}/api/trips`;
 const SERVER_HEALTH_URL = `${API_BASE_URL}/`;
 
+
+  const removeDuplicateTrips = (trips) => {
+  const seen = new Set();
+
+  return trips.filter((trip) => {
+    const key = String(trip.id);
+
+    if (seen.has(key)) {
+      return false;
+    }
+
+    seen.add(key);
+    return true;
+  });
+};
 function App() {
   const [trips, setTrips] = useState([]);
   const location = useLocation();
@@ -42,7 +57,7 @@ function App() {
         .then((res) => res.json())
         .then((data) => {
           if (data && data.items) {
-            setTrips(data.items);
+            setTrips(removeDuplicateTrips(data.items));
           }
         })
         .catch(console.error);
@@ -174,7 +189,7 @@ function App() {
         if (!response.ok) throw new Error('Failed to add trip to server');
 
         const createdTrip = await response.json();
-        setTrips((prevTrips) => [...prevTrips, createdTrip]);
+        setTrips((prevTrips) => removeDuplicateTrips([...prevTrips, createdTrip]));
         return;
       } catch (error) {
         console.error('Server unavailable, trip queued locally:', error);
@@ -182,7 +197,7 @@ function App() {
     }
 
     const localTrip = { ...newTrip, id: Date.now() };
-    setTrips((prevTrips) => [...prevTrips, localTrip]);
+    setTrips((prevTrips) => removeDuplicateTrips([...prevTrips, localTrip]));
     setPendingActions((prevActions) => [...prevActions, { type: 'add', trip: localTrip }]);
   };
 
@@ -286,6 +301,7 @@ function App() {
       ]);
     }
   };
+
 
   return (
     <div className="app">
