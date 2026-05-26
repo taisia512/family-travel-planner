@@ -53,7 +53,7 @@ function App() {
   useEffect(() => {
     const currentUser = JSON.parse(localStorage.getItem('user'));
     if (currentUser?.id) {
-      apiFetch(`${API_URL}?page=1&limit=1000`)
+      apiFetch(`${API_URL}?page=1&pageSize=1000`)
         .then((res) => res.json())
         .then((data) => {
           if (data && data.items) {
