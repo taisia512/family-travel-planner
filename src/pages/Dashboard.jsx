@@ -279,6 +279,14 @@ function Dashboard({ trips, setTrips, onDeleteTrip, isOnline }) {
                 Search
               </button>
 
+              <button
+  type="button"
+  className="past-trips-btn"
+  onClick={() => navigate('/past-trips')}
+>
+  View past trips
+</button>
+
               {canCreateTrip && (
                 <button
                   className="add-trip-btn-top"
@@ -293,19 +301,7 @@ function Dashboard({ trips, setTrips, onDeleteTrip, isOnline }) {
         </div>
 
         <section className="trips-section">
-          <div className="trips-header">
-            <h2>Upcoming Trips:</h2>
-
-            <button
-              type="button"
-              className="past-trips-btn"
-              onClick={() =>
-                navigate('/past-trips')
-              }
-            >
-              View past trips
-            </button>
-          </div>
+        
 
           {upcomingTrips.length > 0 ? (
             <>
