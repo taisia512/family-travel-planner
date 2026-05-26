@@ -263,10 +263,8 @@ function Dashboard({ trips, setTrips, onDeleteTrip, isOnline }) {
               </div>
 
               {hasMoreTrips && (
-                <div ref={loaderRef} className="infinite-loader">
-                  Loading more trips...
-                </div>
-              )}
+  <div ref={loaderRef} className="infinite-loader"></div>
+)}
             </>
           ) : (
             <div className="no-trips">

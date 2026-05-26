@@ -16,6 +16,7 @@ function AddTrip({ onAddTrip }) {
   });
 
   const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const countryOptions = Object.keys(locations);
   const cityOptions = formData.country ? locations[formData.country] : [];
@@ -99,11 +100,15 @@ function AddTrip({ onAddTrip }) {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (isSubmitting) return;
+
     if (validateForm()) {
-      onAddTrip({
+      setIsSubmitting(true);
+
+      await onAddTrip({
         ...formData,
         travelers: parseInt(formData.travelers, 10)
       });
@@ -133,6 +138,7 @@ function AddTrip({ onAddTrip }) {
                 value={formData.country}
                 onChange={handleChange}
                 className={errors.country ? 'error' : ''}
+                disabled={isSubmitting}
               >
                 <option value="">Select a country</option>
                 {countryOptions.map((country) => (
@@ -152,7 +158,7 @@ function AddTrip({ onAddTrip }) {
                 value={formData.city}
                 onChange={handleChange}
                 className={errors.city ? 'error' : ''}
-                disabled={!formData.country}
+                disabled={!formData.country || isSubmitting}
               >
                 <option value="">
                   {formData.country ? 'Select a city' : 'Select country first'}
@@ -175,6 +181,7 @@ function AddTrip({ onAddTrip }) {
                 value={formData.startDate}
                 onChange={handleChange}
                 className={errors.startDate ? 'error' : ''}
+                disabled={isSubmitting}
               />
               {errors.startDate && <span className="error-message">{errors.startDate}</span>}
             </div>
@@ -188,6 +195,7 @@ function AddTrip({ onAddTrip }) {
                 value={formData.endDate}
                 onChange={handleChange}
                 className={errors.endDate ? 'error' : ''}
+                disabled={isSubmitting}
               />
               {errors.endDate && <span className="error-message">{errors.endDate}</span>}
             </div>
@@ -201,17 +209,23 @@ function AddTrip({ onAddTrip }) {
                 value={formData.travelers}
                 onChange={handleChange}
                 className={errors.travelers ? 'error' : ''}
+                disabled={isSubmitting}
               />
               {errors.travelers && <span className="error-message">{errors.travelers}</span>}
             </div>
 
             <div className="form-actions">
-              <button type="button" className="btn cancel-btn" onClick={handleCancel}>
+              <button
+                type="button"
+                className="btn cancel-btn"
+                onClick={handleCancel}
+                disabled={isSubmitting}
+              >
                 Cancel
               </button>
 
-              <button type="submit" className="btn confirm-btn">
-                Confirm
+              <button type="submit" className="btn confirm-btn" disabled={isSubmitting}>
+                {isSubmitting ? 'Saving...' : 'Confirm'}
               </button>
             </div>
           </form>
