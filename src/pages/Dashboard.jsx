@@ -76,21 +76,12 @@ function Dashboard({ trips, setTrips, onDeleteTrip, isOnline }) {
     return endDate >= today;
   });
 
-  const pastTrips = sortedTrips.filter((trip) => {
-    const endDate = new Date(trip.endDate);
-    endDate.setHours(0, 0, 0, 0);
-    return endDate < today;
-  });
-
   const visibleTrips = upcomingTrips.slice(0, visibleCount);
   const hasMoreTrips = visibleCount < upcomingTrips.length;
 
   useEffect(() => {
     setVisibleCount((prev) =>
-      Math.min(
-        Math.max(prev, itemsPerLoad),
-        upcomingTrips.length || itemsPerLoad
-      )
+      Math.min(Math.max(prev, itemsPerLoad), upcomingTrips.length || itemsPerLoad)
     );
   }, [upcomingTrips.length]);
 
@@ -182,7 +173,7 @@ function Dashboard({ trips, setTrips, onDeleteTrip, isOnline }) {
   };
 
   const noTripsMessage = searchInput.trim()
-    ? 'No trips match your search.'
+    ? 'No upcoming trips match your search.'
     : 'No upcoming trips found. Add a new trip to get started!';
 
   return (
@@ -246,6 +237,14 @@ function Dashboard({ trips, setTrips, onDeleteTrip, isOnline }) {
         <section className="trips-section">
           <div className="trips-header">
             <h2>Upcoming Trips:</h2>
+
+            <button
+              type="button"
+              className="past-trips-btn"
+              onClick={() => navigate('/past-trips')}
+            >
+              View past trips
+            </button>
           </div>
 
           {upcomingTrips.length > 0 ? (
@@ -275,27 +274,6 @@ function Dashboard({ trips, setTrips, onDeleteTrip, isOnline }) {
             </div>
           )}
         </section>
-
-        {pastTrips.length > 0 && (
-          <section className="trips-section past-trips-section">
-            <div className="trips-header">
-              <h2>Past Trips:</h2>
-            </div>
-
-            <div className="trips-grid">
-              {pastTrips.map((trip) => (
-                <TripCard
-                  key={trip.id}
-                  trip={trip}
-                  onEdit={handleEdit}
-                  onDelete={handleDeleteClick}
-                  canUpdateTrip={canUpdateTrip}
-                  canDeleteTrip={canDeleteTrip}
-                />
-              ))}
-            </div>
-          </section>
-        )}
       </main>
 
       <DeleteModal

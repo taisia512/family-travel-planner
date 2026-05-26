@@ -18,7 +18,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import VerifyLogin from './pages/VerifyLogin';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
-
+import PastTrips from './pages/PastTrips';
 const PENDING_ACTIONS_KEY = 'family_travel_pending_actions';
 const API_URL = `${API_BASE_URL}/api/trips`;
 const SERVER_HEALTH_URL = `${API_BASE_URL}/`;
@@ -367,6 +367,16 @@ function App() {
           }
         />
       </Routes>
+
+      <Route
+  path="/past-trips"
+  element={
+    <PastTrips
+      trips={trips}
+      onDeleteTrip={handleDeleteTrip}
+    />
+  }
+/>
     </div>
   );
 }
