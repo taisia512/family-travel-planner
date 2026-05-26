@@ -32,24 +32,41 @@ function TripDetail({ trips }) {
 
   useEffect(() => {
     const fetchExpenses = async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/trips/${id}/expenses`);
-        const data = await res.json();
-        setExpenses(data);
-      } catch (error) {
-        console.error('Failed to fetch expenses:', error);
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/trips/${id}/expenses`, {
+      headers: {
+        'x-user-id': userId
       }
-    };
+    });
 
-    const fetchExpenseStats = async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/trips/${id}/expenses/stats`);
-        const data = await res.json();
-        setExpenseStats(data);
-      } catch (error) {
-        console.error('Failed to fetch expense stats:', error);
+    const data = await res.json();
+
+    setExpenses(Array.isArray(data) ? data : []);
+  } catch (error) {
+    console.error('Failed to fetch expenses:', error);
+    setExpenses([]);
+  }
+};
+
+const fetchExpenseStats = async () => {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/trips/${id}/expenses/stats`, {
+      headers: {
+        'x-user-id': userId
       }
-    };
+    });
+
+    const data = await res.json();
+
+    setExpenseStats({
+      totalExpenses: data.totalExpenses || 0,
+      totalAmount: data.totalAmount || 0,
+      averageAmount: data.averageAmount || 0
+    });
+  } catch (error) {
+    console.error('Failed to fetch expense stats:', error);
+  }
+};
 
     if (trip) {
       fetchExpenses();
