@@ -21,11 +21,10 @@ function Dashboard({ trips, setTrips, onDeleteTrip, isOnline }) {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [tripToDelete, setTripToDelete] = useState(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [visibleCount, setVisibleCount] = useState(3);
+  const [visibleCount, setVisibleCount] = useState(6);
 
-  const loaderRef = useRef(null);
   const searchRef = useRef(null);
-
+  const loaderRef = useRef(null);
   const [searchHistory, setSearchHistory] = useState(() => {
     const saved = localStorage.getItem('dashboardSearchHistory');
     return saved ? JSON.parse(saved) : [];
