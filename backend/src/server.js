@@ -116,6 +116,16 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on('markAsRead', async ({ currentUserEmail, otherUserEmail }) => {
+    try {
+      await chatService.markMessagesAsRead(currentUserEmail, otherUserEmail);
+      const unreadCounts = await chatService.getUnreadCounts(currentUserEmail);
+      socket.emit('unreadCounts', unreadCounts);
+    } catch (error) {
+      console.error('Mark as read error:', error);
+    }
+  });
+
   socket.on('disconnect', () => {
     console.log('User disconnected');
   });

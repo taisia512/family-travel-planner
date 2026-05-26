@@ -4,6 +4,31 @@ import { FiUser, FiMessageCircle } from 'react-icons/fi';
 import { useChat } from '../context/ChatContext';
 import { API_BASE_URL } from '../config/api';
 
+const mergeMessages = (existingMsgs, newMsgs) => {
+  const map = new Map();
+  
+  existingMsgs.forEach(msg => {
+    const key = msg.tempId || msg._id || msg.id;
+    if (key) map.set(key, msg);
+  });
+  
+  newMsgs.forEach(msg => {
+    const key = msg.tempId || msg._id || msg.id;
+    if (key) {
+      if (msg.tempId) {
+        map.set(msg.tempId, msg);
+      }
+      const realId = msg._id || msg.id;
+      if (realId) {
+        map.set(realId, msg);
+      }
+    }
+  });
+
+  const uniqueMessages = Array.from(new Set(map.values()));
+  return uniqueMessages.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+};
+
 function Chat() {
   const savedUser = JSON.parse(localStorage.getItem('user'));
 
@@ -26,85 +51,55 @@ function Chat() {
     selectedUserRef.current = selectedUser;
   }, [selectedUser]);
 
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({
-      behavior: 'smooth'
-    });
+    scrollToBottom();
   }, [messages]);
 
   useEffect(() => {
-    if (!socket || !savedUser?.email) return;
+    if (!socket) return;
 
     const handleHistory = (history) => {
-      setMessages(history || []);
-    };
-
-    const handleReceive = (message) => {
-      const currentSelectedUser = selectedUserRef.current;
-
-      if (!currentSelectedUser) return;
-
-      const belongsToCurrentConversation =
-        (message.senderEmail === savedUser.email &&
-          message.receiverEmail === currentSelectedUser.email) ||
-        (message.senderEmail === currentSelectedUser.email &&
-          message.receiverEmail === savedUser.email);
-
-      if (!belongsToCurrentConversation) return;
-
-      setMessages((prev) => {
-        if (message.tempId) {
-          const tempExists = prev.some((m) => m.id === message.tempId);
-
-          if (tempExists) {
-            return prev.map((m) =>
-              m.id === message.tempId ? message : m
-            );
-          }
-        }
-
-        const alreadyExists = prev.some((m) => {
-          const oldId = m._id || m.id;
-          const newId = message._id || message.id;
-
-          return oldId && newId && String(oldId) === String(newId);
-        });
-
-        if (alreadyExists) return prev;
-
-        return [...prev, message];
-      });
-
-      if (message.senderEmail === currentSelectedUser.email && markAsRead) {
-        markAsRead(currentSelectedUser.email);
-
-        socket.emit('getChatHistory', {
-          user1: savedUser.email,
-          user2: currentSelectedUser.email
-        });
+      if (!selectedUserRef.current) return;
+      
+      const isForCurrentChat = history.length === 0 || 
+        history[0].senderEmail === selectedUserRef.current.email || 
+        history[0].receiverEmail === selectedUserRef.current.email;
+        
+      if (isForCurrentChat) {
+        setMessages(prev => mergeMessages(prev, history));
       }
     };
 
-    const handleMessageError = ({ tempId }) => {
-      setMessages((prev) =>
-        prev.map((m) =>
-          m.id === tempId
-            ? { ...m, failed: true, pending: false }
-            : m
-        )
-      );
+    const handleReceive = (message) => {
+      if (!selectedUserRef.current) return;
+
+      const isFromSelected = message.senderEmail === selectedUserRef.current.email;
+      const isFromUs = message.senderEmail === savedUser.email && message.receiverEmail === selectedUserRef.current.email;
+
+      if (isFromSelected || isFromUs) {
+        setMessages(prev => mergeMessages(prev, [message]));
+        
+        if (isFromSelected) {
+          socket.emit('markAsRead', {
+            currentUserEmail: savedUser.email,
+            otherUserEmail: message.senderEmail
+          });
+        }
+      }
     };
 
     socket.on('chatHistory', handleHistory);
     socket.on('receiveMessage', handleReceive);
-    socket.on('messageError', handleMessageError);
 
     return () => {
       socket.off('chatHistory', handleHistory);
       socket.off('receiveMessage', handleReceive);
-      socket.off('messageError', handleMessageError);
     };
-  }, [socket, savedUser?.email, markAsRead]);
+  }, [socket]);
 
   useEffect(() => {
     return () => {
@@ -138,6 +133,12 @@ function Chat() {
     fetchUsers();
   }, [savedUser.email]);
 
+  const activeMessages = messages.filter(msg => {
+    if (!selectedUser) return false;
+    return (msg.senderEmail === savedUser.email && msg.receiverEmail === selectedUser.email) ||
+           (msg.senderEmail === selectedUser.email && msg.receiverEmail === savedUser.email);
+  });
+
   const handleSelectUser = (user) => {
     setSelectedUser(user);
     setMessages([]);
@@ -159,30 +160,28 @@ function Chat() {
   };
 
   const handleSend = () => {
-    const cleanText = text.trim();
+    if (!text.trim() || !selectedUser || !socket) return;
 
-    if (!cleanText) return;
-    if (!selectedUser) return;
-    if (!socket) return;
-
-    const tempMessage = {
-      id: `temp-${Date.now()}`,
+    const tempId = 'temp-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+    const optimisticMessage = {
+      id: tempId,
+      tempId: tempId,
       senderName: savedUser.fullName,
       senderEmail: savedUser.email,
       receiverEmail: selectedUser.email,
-      text: cleanText,
-      createdAt: new Date().toISOString(),
-      pending: true
+      text: text,
+      status: 'sending',
+      createdAt: new Date().toISOString()
     };
 
-    setMessages((prev) => [...prev, tempMessage]);
+    setMessages((prev) => [...prev, optimisticMessage]);
 
     socket.emit('sendMessage', {
+      tempId: tempId,
       senderName: savedUser.fullName,
       senderEmail: savedUser.email,
       receiverEmail: selectedUser.email,
-      text: cleanText,
-      tempId: tempMessage.id
+      text: text
     });
 
     setText('');
@@ -352,45 +351,28 @@ function Chat() {
                     gap: '12px'
                   }}
                 >
-                  {messages.map((message) => {
+                  {activeMessages.map((message) => {
                     const isMe = message.senderEmail === savedUser.email;
-
                     return (
-                      <div
-                        key={message._id || message.id}
-                        style={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: isMe ? 'flex-end' : 'flex-start',
-                          opacity: message.pending ? 0.65 : 1
-                        }}
-                      >
-                        <span
-                          style={{
-                            fontSize: '12px',
-                            color: '#888',
-                            marginBottom: '4px'
-                          }}
-                        >
+                      <div key={message.tempId || message._id || message.id} style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: isMe ? 'flex-end' : 'flex-start'
+                      }}>
+                        <span style={{ fontSize: '12px', color: '#888', marginBottom: '4px', marginLeft: isMe ? '0' : '8px', marginRight: isMe ? '8px' : '0' }}>
                           {message.senderName}
-                          {message.pending ? ' · sending...' : ''}
-                          {message.failed ? ' · failed' : ''}
                         </span>
-
-                        <div
-                          style={{
-                            backgroundColor: isMe ? '#2d4b3b' : '#ffffff',
-                            color: isMe ? '#ffffff' : '#333333',
-                            padding: '10px 16px',
-                            borderRadius: isMe
-                              ? '16px 16px 4px 16px'
-                              : '16px 16px 16px 4px',
-                            maxWidth: '70%',
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-                            border: isMe ? 'none' : '1px solid #e0e0e0',
-                            lineHeight: '1.4'
-                          }}
-                        >
+                        <div style={{
+                          backgroundColor: isMe ? '#2d4b3b' : '#ffffff',
+                          color: isMe ? '#ffffff' : '#333333',
+                          padding: '10px 16px',
+                          borderRadius: isMe ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
+                          maxWidth: '70%',
+                          boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                          border: isMe ? 'none' : '1px solid #e0e0e0',
+                          lineHeight: '1.4',
+                          opacity: message.status === 'sending' ? 0.6 : 1
+                        }}>
                           {message.text}
                         </div>
                       </div>
