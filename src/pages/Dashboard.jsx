@@ -10,6 +10,9 @@ import { API_BASE_URL } from '../config/api';
 function Dashboard({ trips, setTrips, onDeleteTrip, isOnline }) {
   const navigate = useNavigate();
 
+  const [visibleCount, setVisibleCount] = useState(6);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+
   const savedUser = JSON.parse(localStorage.getItem('user'));
   const permissions = savedUser?.permissions || [];
 
@@ -21,50 +24,32 @@ function Dashboard({ trips, setTrips, onDeleteTrip, isOnline }) {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [tripToDelete, setTripToDelete] = useState(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [visibleCount, setVisibleCount] = useState(6);
-const [isLoadingMore, setIsLoadingMore] = useState(false);
+
   const searchRef = useRef(null);
   const loaderRef = useRef(null);
+
   const [searchHistory, setSearchHistory] = useState(() => {
     const saved = localStorage.getItem('dashboardSearchHistory');
     return saved ? JSON.parse(saved) : [];
   });
 
   useEffect(() => {
-  const observer = new IntersectionObserver(
-    (entries) => {
-      const firstEntry = entries[0];
+    const socket = io(API_BASE_URL);
 
-      if (firstEntry.isIntersecting && hasMoreTrips && !isLoadingMore) {
-        setIsLoadingMore(true);
+    socket.on('newTrip', (trip) => {
+      setTrips((prevTrips) => {
+        const alreadyExists = prevTrips.some(
+          (existingTrip) => String(existingTrip.id) === String(trip.id)
+        );
 
-        setTimeout(() => {
-          setVisibleCount((prev) =>
-            Math.min(prev + itemsPerLoad, upcomingTrips.length)
-          );
-          setIsLoadingMore(false);
-        }, 250);
-      }
-    },
-    {
-      root: null,
-      rootMargin: '200px',
-      threshold: 0
-    }
-  );
+        if (alreadyExists) return prevTrips;
 
-  const currentLoader = loaderRef.current;
+        return [...prevTrips, trip];
+      });
+    });
 
-  if (currentLoader) {
-    observer.observe(currentLoader);
-  }
-
-  return () => {
-    if (currentLoader) {
-      observer.unobserve(currentLoader);
-    }
-  };
-}, [hasMoreTrips, isLoadingMore, upcomingTrips.length]);
+    return () => socket.disconnect();
+  }, [setTrips]);
 
   const itemsPerLoad = 3;
 
@@ -90,15 +75,20 @@ const [isLoadingMore, setIsLoadingMore] = useState(false);
   const upcomingTrips = sortedTrips.filter((trip) => {
     const endDate = new Date(trip.endDate);
     endDate.setHours(0, 0, 0, 0);
+
     return endDate >= today;
   });
 
   const visibleTrips = upcomingTrips.slice(0, visibleCount);
+
   const hasMoreTrips = visibleCount < upcomingTrips.length;
 
   useEffect(() => {
     setVisibleCount((prev) =>
-      Math.min(Math.max(prev, itemsPerLoad), upcomingTrips.length || itemsPerLoad)
+      Math.min(
+        Math.max(prev, itemsPerLoad),
+        upcomingTrips.length || itemsPerLoad
+      )
     );
   }, [upcomingTrips.length]);
 
@@ -107,29 +97,48 @@ const [isLoadingMore, setIsLoadingMore] = useState(false);
       (entries) => {
         const firstEntry = entries[0];
 
-        if (firstEntry.isIntersecting && hasMoreTrips) {
-          setVisibleCount((prev) => prev + itemsPerLoad);
+        if (
+          firstEntry.isIntersecting &&
+          hasMoreTrips &&
+          !isLoadingMore
+        ) {
+          setIsLoadingMore(true);
+
+          setTimeout(() => {
+            setVisibleCount((prev) =>
+              Math.min(prev + itemsPerLoad, upcomingTrips.length)
+            );
+
+            setIsLoadingMore(false);
+          }, 250);
         }
       },
       {
         root: null,
-        rootMargin: '120px',
-        threshold: 0.1
+        rootMargin: '200px',
+        threshold: 0
       }
     );
 
     const currentLoader = loaderRef.current;
 
-    if (currentLoader) observer.observe(currentLoader);
+    if (currentLoader) {
+      observer.observe(currentLoader);
+    }
 
     return () => {
-      if (currentLoader) observer.unobserve(currentLoader);
+      if (currentLoader) {
+        observer.unobserve(currentLoader);
+      }
     };
-  }, [hasMoreTrips]);
+  }, [hasMoreTrips, isLoadingMore, upcomingTrips.length]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (searchRef.current && !searchRef.current.contains(event.target)) {
+      if (
+        searchRef.current &&
+        !searchRef.current.contains(event.target)
+      ) {
         setShowSuggestions(false);
       }
     };
@@ -137,7 +146,10 @@ const [isLoadingMore, setIsLoadingMore] = useState(false);
     document.addEventListener('mousedown', handleClickOutside);
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener(
+        'mousedown',
+        handleClickOutside
+      );
     };
   }, []);
 
@@ -153,6 +165,7 @@ const [isLoadingMore, setIsLoadingMore] = useState(false);
   const handleConfirmDelete = () => {
     if (tripToDelete) {
       onDeleteTrip(tripToDelete);
+
       setDeleteModalOpen(false);
       setTripToDelete(null);
     }
@@ -175,12 +188,18 @@ const [isLoadingMore, setIsLoadingMore] = useState(false);
     const updatedHistory = [
       trimmedValue,
       ...searchHistory.filter(
-        (item) => item.toLowerCase() !== trimmedValue.toLowerCase()
+        (item) =>
+          item.toLowerCase() !== trimmedValue.toLowerCase()
       )
     ].slice(0, 5);
 
     setSearchHistory(updatedHistory);
-    localStorage.setItem('dashboardSearchHistory', JSON.stringify(updatedHistory));
+
+    localStorage.setItem(
+      'dashboardSearchHistory',
+      JSON.stringify(updatedHistory)
+    );
+
     setShowSuggestions(false);
   };
 
@@ -204,12 +223,19 @@ const [isLoadingMore, setIsLoadingMore] = useState(false);
               <h1>Plan your next trip:</h1>
             </div>
 
-            <div className={`connection-status ${isOnline ? 'online' : 'offline'}`}>
+            <div
+              className={`connection-status ${
+                isOnline ? 'online' : 'offline'
+              }`}
+            >
               {isOnline ? 'Online' : 'Offline mode'}
             </div>
 
             <div className="search-section">
-              <div className="search-wrapper" ref={searchRef}>
+              <div
+                className="search-wrapper"
+                ref={searchRef}
+              >
                 <div className="search-bar">
                   <span className="search-icon">⌕</span>
 
@@ -217,33 +243,48 @@ const [isLoadingMore, setIsLoadingMore] = useState(false);
                     type="text"
                     placeholder="Search trips by country or city"
                     value={searchInput}
-                    onChange={(e) => setSearchInput(e.target.value)}
-                    onFocus={() => setShowSuggestions(true)}
+                    onChange={(e) =>
+                      setSearchInput(e.target.value)
+                    }
+                    onFocus={() =>
+                      setShowSuggestions(true)
+                    }
                   />
                 </div>
 
-                {showSuggestions && searchHistory.length > 0 && (
-                  <div className="search-suggestions">
-                    {searchHistory.map((item, index) => (
-                      <button
-                        key={`${item}-${index}`}
-                        type="button"
-                        className="search-suggestion-item"
-                        onClick={() => handleSuggestionClick(item)}
-                      >
-                        {item}
-                      </button>
-                    ))}
-                  </div>
-                )}
+                {showSuggestions &&
+                  searchHistory.length > 0 && (
+                    <div className="search-suggestions">
+                      {searchHistory.map((item, index) => (
+                        <button
+                          key={`${item}-${index}`}
+                          type="button"
+                          className="search-suggestion-item"
+                          onClick={() =>
+                            handleSuggestionClick(item)
+                          }
+                        >
+                          {item}
+                        </button>
+                      ))}
+                    </div>
+                  )}
               </div>
 
-              <button className="search-btn" type="button" onClick={handleSearch}>
+              <button
+                className="search-btn"
+                type="button"
+                onClick={handleSearch}
+              >
                 Search
               </button>
 
               {canCreateTrip && (
-                <button className="add-trip-btn-top" onClick={handleAddTrip} type="button">
+                <button
+                  className="add-trip-btn-top"
+                  onClick={handleAddTrip}
+                  type="button"
+                >
                   + Add Trip
                 </button>
               )}
@@ -258,7 +299,9 @@ const [isLoadingMore, setIsLoadingMore] = useState(false);
             <button
               type="button"
               className="past-trips-btn"
-              onClick={() => navigate('/past-trips')}
+              onClick={() =>
+                navigate('/past-trips')
+              }
             >
               View past trips
             </button>
@@ -280,8 +323,11 @@ const [isLoadingMore, setIsLoadingMore] = useState(false);
               </div>
 
               {hasMoreTrips && (
-  <div ref={loaderRef} className="infinite-loader"></div>
-)}
+                <div
+                  ref={loaderRef}
+                  className="infinite-loader"
+                ></div>
+              )}
             </>
           ) : (
             <div className="no-trips">
