@@ -50,9 +50,21 @@ function Dashboard({ trips, setTrips, onDeleteTrip, isOnline }) {
 
   const itemsPerLoad = 3;
 
-  const sortedTrips = [...trips].sort(
-    (a, b) => new Date(a.startDate) - new Date(b.startDate)
+  const filteredTrips = trips.filter((trip) => {
+  const query = searchInput.trim().toLowerCase();
+
+  if (!query) return true;
+
+  return (
+    trip.country?.toLowerCase().includes(query) ||
+    trip.city?.toLowerCase().includes(query) ||
+    trip.destination?.toLowerCase().includes(query)
   );
+});
+
+const sortedTrips = [...filteredTrips].sort(
+  (a, b) => new Date(a.startDate) - new Date(b.startDate)
+);
 
   const visibleTrips = sortedTrips.slice(0, visibleCount);
   const hasMoreTrips = visibleCount < sortedTrips.length;
@@ -172,7 +184,7 @@ function Dashboard({ trips, setTrips, onDeleteTrip, isOnline }) {
 
                   <input
                     type="text"
-                    placeholder="Search your next destination"
+                    placeholder="Search trips by country or city"
                     value={searchInput}
                     onChange={(e) =>
                       setSearchInput(e.target.value)
@@ -252,9 +264,7 @@ function Dashboard({ trips, setTrips, onDeleteTrip, isOnline }) {
             </>
           ) : (
             <div className="no-trips">
-              <p>
-                No trips found. Add a new trip to get started!
-              </p>
+                <p>No trips match your search.</p>
             </div>
           )}
         </section>
