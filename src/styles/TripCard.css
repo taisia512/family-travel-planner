@@ -109,3 +109,27 @@
   border-radius: 14px;
   display: block;
 }
+
+@media (max-width: 640px) {
+  .trip-card {
+    height: auto;
+    min-height: 180px;
+  }
+
+  .trip-info.with-image {
+    gap: 10px;
+  }
+
+  .trip-country {
+    font-size: 20px;
+  }
+
+  .trip-city,
+  .trip-details {
+    font-size: 13px;
+  }
+
+  .trip-image-wrapper {
+    width: 105px;
+  }
+}

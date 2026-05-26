@@ -878,3 +878,58 @@
     font-size: 12px;
   }
 }
+
+@media (max-width: 640px) {
+  .explore-layout {
+    width: 100%;
+    overflow-x: hidden;
+  }
+
+  .explore-main {
+    width: calc(100vw - 70px);
+    padding: 12px 10px;
+    overflow-x: hidden;
+  }
+
+  .explore-top-row {
+    grid-template-columns: 1fr;
+  }
+
+  .destinations-card {
+    overflow: visible;
+  }
+
+  .destinations-content {
+    overflow: visible;
+  }
+
+  .parallel-views {
+    grid-template-columns: 1fr;
+  }
+
+  .parallel-panel {
+    width: 100%;
+    min-height: 220px;
+  }
+
+  .table-panel .table-view {
+    overflow-x: auto;
+  }
+
+  .destinations-table {
+    min-width: 420px;
+  }
+
+  .chart-panel .pie-view {
+    grid-template-columns: 1fr;
+  }
+
+  .pie-chart-ring {
+    width: 150px;
+    height: 150px;
+  }
+
+  .bar-row {
+    grid-template-columns: 60px 1fr 24px;
+  }
+}

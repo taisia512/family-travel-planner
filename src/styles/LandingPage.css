@@ -234,3 +234,88 @@
 .h5 { height: 12px; left: 140px; }
 .h6 { height: 110px; left: 160px; }
 .h7 { height: 96px; left: 180px; }
+
+@media (max-width: 640px) {
+  .landing-page {
+    min-height: 100vh;
+    height: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .landing-header {
+    position: relative;
+    top: auto;
+    left: auto;
+    right: auto;
+    padding: 26px 18px 0 18px;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .header-buttons {
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .header-btn {
+    width: 92px;
+    height: 34px;
+    font-size: 15px;
+  }
+
+  .landing-main {
+    min-height: calc(100vh - 80px);
+    height: auto;
+    padding: 80px 18px 0 18px;
+    overflow: hidden;
+  }
+
+  .landing-title {
+    position: static;
+    transform: none;
+    font-size: 42px;
+    line-height: 1.08;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .landing-tagline {
+    position: static;
+    transform: none;
+    margin-top: 24px;
+    font-size: 23px;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .start-btn {
+    position: static;
+    transform: none;
+    display: block;
+    margin: 32px auto 0 auto;
+    width: 190px;
+    height: 54px;
+    font-size: 18px;
+  }
+
+  .landing-visual {
+    position: relative;
+    height: 330px;
+    margin-top: 70px;
+  }
+
+  .green-back-shape {
+    display: none;
+  }
+
+  .device-mockup {
+    width: 100vw;
+    max-width: none;
+    left: 50%;
+    height: 260px;
+    border-left: none;
+    border-right: none;
+    border-radius: 0;
+  }
+}
